@@ -1,0 +1,141 @@
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+
+class Article {  //Subtask 01
+private :
+    string model;
+    double netprice,taxRate;
+public :
+    Article(string m , double n ) { model = m; netprice = n; taxRate = 0.19;}
+    virtual ~Article(){cout<<"~Article()\n";}
+    void set_model(string mod){model= mod;}
+    void set_price(double price){netprice=price;}
+    string get_model(){return model;}
+    double get_netprice(){return netprice;}
+    double get_grossprice(){return netprice+taxRate;}
+    virtual void print()=0;
+};
+
+class Accessory : public Article { //Subtask 02
+private :
+    bool original;
+public :
+   Accessory(string na ,double np ,bool o) : Article(na,np)
+   {
+        original=o;
+   }
+   virtual~Accessory(){cout<<"~Accessory()";}
+   virtual void print(){if(original){cout<<"(original accessory)";}}
+};
+
+enum OperatingSystem {unknown,android,iOS,macos,linux,proprietary,unix,windows}; //Subtask 03
+
+inline ostream & operator <<(ostream & op , OperatingSystem& x) {
+    switch(x){
+                case(android):return op <<"android";
+                case(iOS):return op <<"ios";
+                case(macos):return op <<"macos";
+                case(linux):return op <<"linux";
+                case(proprietary):return op <<"proprietary";
+                case(unix):return op <<"unix";
+                case(windows):return op <<"windows";
+                default : return op << "unknown";
+             }
+}
+
+class Device : public Article{ //Subtask 04
+private :
+    int main_memory;
+    OperatingSystem os;
+public :
+    Device(string n ,double np ,int m_m , OperatingSystem operations=unknown) : Article(n,np){main_memory=m_m;os=operations;}
+    virtual~Device(){cout<<"~Device()";}
+    OperatingSystem get_os(){return os;}
+    virtual void print(){
+                            cout<<Article::get_model()<<" RAM"<<main_memory<<" GB";
+                        }
+
+
+};
+
+class Notebook : public Device{ //Subtask 05
+private :
+    string drive;
+    bool convertible;
+public :
+    Notebook(string n,double np,int m_m,string d,OperatingSystem os = linux,bool con=false) : Device(n,np,m_m,os){drive=d;convertible=con;}
+    virtual~Notebook(){cout<<"~Notebook()";}
+    bool is_a_convertible(){return convertible;}
+    virtual void print(){Device::print();if(convertible){cout<<"(convertible)";};cout<<drive;}
+};
+
+class Phone : public Device{ //Subtask 06
+public :
+    Phone(string n,double np,int m_m=4,OperatingSystem os=android) : Device(n,np,m_m,os){}
+    virtual~Phone(){cout<<"~Phone()";}
+    virtual void print(){Device ::print();cout<<" phone";}
+};
+
+class InCart { //Subtask 07
+private :
+    Article *article;
+    int amount;
+    InCart *next;
+public :
+    InCart(Article*a=nullptr,int am=0 ,InCart *n=nullptr){article=a;amount=am;next=n;}
+    virtual~InCart(){cout<<"~Incart() "<<amount;article->~Article();}
+    InCart* get_next(){return next;}
+    virtual void print(){cout <<amount<<" ";article->print(); //some how this is not printing the the first element , i tried it with article->get_model but still not giving any names.
+    cout<<"\n"<<fixed<<setprecision(2)<<setfill(' ') << setw(58)<<article->get_grossprice()<<" EUR  "<<amount*article->get_grossprice()<<" EUR\n   "<<setw(73)<<"-------------\n";}
+};
+
+class ShoppingCart { //Subtask 8
+private :
+    InCart *articles=nullptr;
+    double minFressShipping , sumNetPrice , sumGrossPrice;
+public :
+    ShoppingCart(){sumGrossPrice=0;sumNetPrice=0;minFressShipping=1000;}
+    ~ShoppingCart(){cout<<"~ShoppingCart()";delete articles;cout<<"delete article :";}
+    void set_minFreeShipping(double minFS){minFressShipping=minFS;}
+    void add_article(int amount,Article *p) {if (articles==nullptr){InCart *head_cart= new InCart(p,amount);articles=head_cart;
+                                                                    for(int i=0;i<amount;i++){sumNetPrice=sumNetPrice+p->get_netprice();}sumGrossPrice=sumNetPrice+sumNetPrice*(0.19);}
+                                            else {InCart *next_cart=new InCart(p,amount,articles);articles=next_cart;
+                                                  for(int x=0;x<amount;x++){sumNetPrice=sumNetPrice+p->get_netprice();};sumGrossPrice=sumNetPrice+sumNetPrice*(0.19);}}
+    void print(){cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n+                        P R O T O - T E C - S H O P                         +\n+                     Y O U R   S H O P P I N G C A R T                      +\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    while(articles!=nullptr){articles->print();articles=articles->get_next();}
+    cout<<fixed<<setprecision(2)<<setfill(' ') << setw(65)<<"sum net price: \t"<<sumNetPrice<<" EUR\n"<< setw(65)<<"tax: \t"<<sumGrossPrice-sumNetPrice<<" EUR\n"<< setw(65)<<"sum gross price:\t"<<sumGrossPrice<<" EUR\n"<<setw(73)<<"-------------\n"<<setw(65)<<"shipping: \t";
+    double s;
+    if(sumGrossPrice<minFressShipping)
+        s=5.90;
+    else
+        s=0;
+    cout<<s<<" EUR"<<endl;
+    cout<<setfill(' ') <<setw(73)<<"-------------"<<endl;
+    cout<<fixed<<setprecision(2)<<setfill(' ') <<setw(65)<<"total: \t"<<
+    s+sumGrossPrice<<" EUR"<<endl;
+    cout<<setfill(' ') <<setw(73)<<"============="<<endl;
+    }
+};
+int main() //Subtask 09
+{
+    ShoppingCart Myshop;
+    Myshop.set_minFreeShipping(500);
+
+    Accessory first("YOOLOX 10k Wireless Powerbank Qi",31.08,false);
+    Myshop.add_article(3,&first);
+
+    Phone second("Samsung Galaxy S10+ SM-G975F/DS Dual SIM",661.67,8,android);
+    Myshop.add_article(1,&second);
+
+    Phone third("Apple iPhone 11 Pro 256GB",1097.47 ,4,iOS);
+    Myshop.add_article(2,&third);
+
+    Notebook forth("ASUS ROG Strix Scar III G731",1586.55,16,"512GB SSD + 1TB SSHD",windows,false);
+    Myshop.add_article(1,&forth);
+
+    Myshop.print();
+    return 0;
+}
