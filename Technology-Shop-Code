@@ -31,7 +31,7 @@ public :
    virtual void print(){if(original){cout<<"(original accessory)";}}
 };
 
-enum OperatingSystem {unknown,android,iOS,macos,linux,proprietary,unix,windows}; //Subtask 03
+enum OperatingSystem {unknown,android,iOS,macos,linux,proprietary,unix,windows}; //Subtask 03 
 
 inline ostream & operator <<(ostream & op , OperatingSystem& x) {
     switch(x){
